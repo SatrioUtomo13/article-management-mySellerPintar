@@ -1,14 +1,12 @@
 'use client';
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -22,10 +20,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner"
+import { useRouter } from "next/navigation";
+
+import { register } from "@/lib/api/axios";
 
 const formSchema = z.object({
     username: z.string()
@@ -40,7 +41,9 @@ const formSchema = z.object({
 })
 
 export default function RegisterForm() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // Define form
     const form = useForm<z.infer<typeof formSchema>>({
@@ -53,10 +56,17 @@ export default function RegisterForm() {
     })
 
     // Define submit handler
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        setLoading(true);
+        try {
+            await register(values);
+            toast.success("Registration successful!");
+            router.push("/articles");
+        } catch (error) {
+            toast.error("Registration failed. Please try again.")
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -129,8 +139,8 @@ export default function RegisterForm() {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                            <SelectItem value="user">User</SelectItem>
+                                            <SelectItem value="Admin">Admin</SelectItem>
+                                            <SelectItem value="User">User</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -138,7 +148,13 @@ export default function RegisterForm() {
                             )}
                         />
 
-                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Login</Button>
+                        <Button
+                            type="submit"
+                            className="w-full bg-blue-600 hover:bg-blue-700"
+                            disabled={loading}
+                        >
+                            {loading ? "Registering..." : "Register"}
+                        </Button>
                     </form>
                 </Form>
 

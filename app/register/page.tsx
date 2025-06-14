@@ -2,8 +2,8 @@ import RegisterForm from "../components/RegisterForm";
 
 export default function RegisterPage() {
     return (
-        <div className="min-h-screen flex items-center justify-center">
+        <section className="min-h-screen flex items-center justify-center">
             <RegisterForm />
-        </div>
+        </section>
     )
 }
