@@ -3,9 +3,6 @@ import { RegisterData, LoginData } from "@/types/auth";
 
 export const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
-    headers: {
-        "Content-Type": "application/json",
-    },
 }); 
 
 /* === AUTH === */
@@ -25,6 +22,36 @@ export const login = async (data: LoginData) => {
         return res.data
     } catch (error: any) {
         console.error("Login error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/* === ARTICLES === */
+export const fetchArticles = async (token: string, page = 1) => {
+    try {
+        const res= await axiosInstance.get(`articles/?page=${page}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            })
+        return res.data
+    } catch (error: any) {
+        console.error("Fetch error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/* === CATEGORY === */
+export const fetchCategories = async (token: string) => {
+    try {
+        const res = await axiosInstance.get("categories", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Fetch error:", error.response?.data || error.message);
         throw error;
     }
 }

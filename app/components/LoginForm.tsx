@@ -50,7 +50,9 @@ export default function LoginForm() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setLoading(true);
         try {
-            await login(values);
+            const res = await login(values);
+            localStorage.setItem("token", res.token);
+
             toast.success("Registration successful!");
             router.push("/articles");
         } catch (error: any) {

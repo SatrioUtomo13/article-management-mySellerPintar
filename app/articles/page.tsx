@@ -1,42 +1,105 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import Image from "next/image";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
-import { LogOut } from "lucide-react"
 import { Search } from "lucide-react"
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { setArticles } from "@/store/articleSlice";
+import { setCategories } from "@/store/categorySlice"
 
-import AlertDialogLogout from "@/widgets/alertDialog";
+import Header from "../components/Header";
+import Navbar from "../components/Navbar";
+import ArticleCard from "../components/ArticleCard";
+import PaginationControl from "@/widgets/PaginationControl"
+import Footer from "@/widgets/footer"
+import { fetchArticles, fetchCategories } from "@/lib/api/axios";
+import { Category } from "@/types/article"
 
 export default function ListArticles() {
+    const { articles, page, total, limit } = useAppSelector(state => state.article);
+    const { categories } = useAppSelector(state => state.category);
+    const dispatch = useAppDispatch()
+
     const [isOpen, setIsOpen] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
+    const [token, setToken] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(page || 1);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string | null>(null)
+
     const router = useRouter()
 
-    const handleLogout = () => {
-        // localStorage.removeItem("token") // Hapus token
-        // router.push("/login")            // Redirect ke login
+    const totalPages = Math.ceil(total / limit);
 
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > totalPages) return;
+        setCurrentPage(newPage);
+    };
+
+    useEffect(() => {
+        const storedToken = localStorage.getItem("token");
+        setToken(storedToken);
+    }, []);
+
+    useEffect(() => {
+        if (!token) return;
+
+        const getDataArticles = async () => {
+            try {
+                const res = await fetchArticles(token, currentPage);
+                dispatch(setArticles(res));
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getDataArticles();
+    }, [token, currentPage]);
+
+
+    useEffect(() => {
+        if (!token) return;
+
+        const getDataCategories = async () => {
+            try {
+                const res = await fetchCategories(token);
+                dispatch(setCategories(res.data));
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getDataCategories();
+    }, [token])
+
+    const handleLogout = () => {
         setOpenDialog(true)
     }
 
     const confirmLogout = () => {
-        // Jalankan logika logout di sini
-        console.log("Logging out...")
         setOpenDialog(false)
 
-        // contoh redirect
         localStorage.removeItem("token") // Hapus token
         router.push("/login")
     }
+
+    // const filteredArticles = selectedCategory ? articles.filter((article) => article.category?.name === selectedCategory) : articles
+
+    const filteredArticles = (selectedCategory: string | null, searchQuery: string) => {
+        if (selectedCategory) {
+            return articles.filter((article) => article.category?.name === selectedCategory);
+        } else if (searchQuery) {
+            return articles.filter((article) => article.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        } else {
+            return articles;
+        }
+    }
+    const filtered = filteredArticles(selectedCategory, searchQuery || "");
+
+    // const totalPages = Math.ceil(filteredArticles.length / limit);
+
     return (
         <section>
             {isOpen && (
@@ -46,53 +109,15 @@ export default function ListArticles() {
                 />
             )}
             <header className="relative w-full min-h-screen bg-blue-600 text-white">
-                <div className="absolute inset-0 z-0">
-                    <Image
-                        src={"/jumbotron.jpg"}
-                        alt="Hero Image"
-                        fill
-                        className="absolute inset-0 w-full h-full object-cover z-0"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-blue-700/70 z-10" />
-                </div>
+                <Header />
 
                 <div className="relative z-10">
-                    <div className="p-4 flex justify-between bg-white sticky top-0">
-                        <div className="flex space-x-2">
-                            <Image
-                                src={"/image.png"}
-                                alt="Logo"
-                                width={25}
-                                height={22}
-                            />
-                            <h3 className="font-bold text-[#000150]">Logoipsum</h3>
-                        </div>
-                        <div>
-                            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-                                <DropdownMenuTrigger asChild>
-                                    <div className="bg-blue-200 rounded-full h-8 w-8 flex items-center justify-center font-bold text-blue-600 cursor-pointer">
-                                        J
-                                    </div>
-                                </DropdownMenuTrigger>
-
-                                <DropdownMenuContent align="end" className="w-40">
-                                    <DropdownMenuItem>My Account</DropdownMenuItem>
-                                    <div className="border-b border-gray-200" />
-                                    <DropdownMenuItem className="text-red-500 hover:text-red-600" onClick={handleLogout}>
-                                        <LogOut className="w-4 h-4 text-red-500 hover:text-red-600" />
-                                        Log out
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <AlertDialogLogout
-                                open={openDialog}
-                                onOpenChange={setOpenDialog}
-                                onConfirm={confirmLogout}
-                            />
-                        </div>
-                    </div>
+                    <Navbar
+                        onLogout={handleLogout}
+                        open={openDialog}
+                        onOpenChange={setOpenDialog}
+                        onConfirm={confirmLogout}
+                    />
 
                     <div className="min-h-screen px-4 flex flex-col items-center justify-center">
                         <div className="space-y-3 flex flex-col items-center justify-center">
@@ -104,14 +129,20 @@ export default function ListArticles() {
                         </div>
 
                         <div className="mt-6 w-full max-w-md space-y-3 bg-blue-500 border-8 border-blue-500 rounded-md">
-                            <Select>
+                            <Select onValueChange={(value) =>
+                                setSelectedCategory(value === 'all' ? null : value)}>
                                 <SelectTrigger className="bg-white text-gray-900 font-medium w-full data-[placeholder]:text-gray-900">
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="design">Design</SelectItem>
-                                    <SelectItem value="ux">UX</SelectItem>
-                                    <SelectItem value="business">Business</SelectItem>
+                                    <SelectItem value="all">All Categories</SelectItem>
+                                    {categories
+                                        .filter(category => category.id && category.name) // pastikan tidak undefined / kosong
+                                        .map((category: Category) => (
+                                            <SelectItem key={category.id} value={category.name}>
+                                                {category.name}
+                                            </SelectItem>
+                                        ))}
                                 </SelectContent>
                             </Select>
                             <div className="relative text-slate-400">
@@ -119,12 +150,29 @@ export default function ListArticles() {
                                 <Input
                                     placeholder="Search articles"
                                     className="pl-8 bg-white"
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
+
+            <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-4 mx-4">
+                {filtered && filtered.length > 0 ? (
+                    filtered.map((article) => <ArticleCard key={article.id} article={article} />)
+                ) : (
+                    <p>No article found</p>
+                )}
+            </main>
+
+            <PaginationControl
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
+
+            <Footer />
         </section>
     )
 }
