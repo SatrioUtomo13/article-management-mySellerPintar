@@ -16,15 +16,16 @@ import PaginationControl from "@/widgets/PaginationControl"
 import Footer from "@/widgets/footer"
 import { fetchArticles, fetchCategories } from "@/lib/api/axios";
 import { Category } from "@/types/article"
+import { handleLogout, confirmLogout, filterArticles } from "@/helpers/articleHelpers"
 
 export default function ListArticles() {
     const { articles, page, total, limit } = useAppSelector(state => state.article);
     const { categories } = useAppSelector(state => state.category);
+    const { token } = useAppSelector(state => state.auth);
     const dispatch = useAppDispatch()
 
     const [isOpen, setIsOpen] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
-    const [token, setToken] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(page || 1);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState<string | null>(null)
@@ -37,11 +38,6 @@ export default function ListArticles() {
         if (newPage < 1 || newPage > totalPages) return;
         setCurrentPage(newPage);
     };
-
-    useEffect(() => {
-        const storedToken = localStorage.getItem("token");
-        setToken(storedToken);
-    }, []);
 
     useEffect(() => {
         if (!token) return;
@@ -61,7 +57,6 @@ export default function ListArticles() {
 
     useEffect(() => {
         if (!token) return;
-
         const getDataCategories = async () => {
             try {
                 const res = await fetchCategories(token);
@@ -74,29 +69,9 @@ export default function ListArticles() {
         getDataCategories();
     }, [token])
 
-    const handleLogout = () => {
-        setOpenDialog(true)
-    }
-
-    const confirmLogout = () => {
-        setOpenDialog(false)
-
-        localStorage.removeItem("token") // Hapus token
-        router.push("/login")
-    }
-
-    // const filteredArticles = selectedCategory ? articles.filter((article) => article.category?.name === selectedCategory) : articles
-
-    const filteredArticles = (selectedCategory: string | null, searchQuery: string) => {
-        if (selectedCategory) {
-            return articles.filter((article) => article.category?.name === selectedCategory);
-        } else if (searchQuery) {
-            return articles.filter((article) => article.title.toLowerCase().includes(searchQuery.toLowerCase()));
-        } else {
-            return articles;
-        }
-    }
-    const filtered = filteredArticles(selectedCategory, searchQuery || "");
+    const onLogout = () => handleLogout(setOpenDialog)
+    const onConfirmLogout = () => confirmLogout(setOpenDialog, router)
+    const filtered = filterArticles(articles, selectedCategory, searchQuery || "");
 
     // const totalPages = Math.ceil(filteredArticles.length / limit);
 
@@ -113,10 +88,10 @@ export default function ListArticles() {
 
                 <div className="relative z-10">
                     <Navbar
-                        onLogout={handleLogout}
+                        onLogout={onLogout}
                         open={openDialog}
                         onOpenChange={setOpenDialog}
-                        onConfirm={confirmLogout}
+                        onConfirm={onConfirmLogout}
                     />
 
                     <div className="min-h-screen px-4 flex flex-col items-center justify-center">

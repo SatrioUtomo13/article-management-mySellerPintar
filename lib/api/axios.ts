@@ -41,6 +41,20 @@ export const fetchArticles = async (token: string, page = 1) => {
     }
 }
 
+export const fetchArticleById = async (token: string, id: string) => {
+    try {
+        const res = await axiosInstance.get(`articles/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Fetch error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
 /* === CATEGORY === */
 export const fetchCategories = async (token: string) => {
     try {
