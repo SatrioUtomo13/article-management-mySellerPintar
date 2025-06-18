@@ -27,6 +27,20 @@ export const login = async (data: LoginData) => {
 }
 
 /* === ARTICLES === */
+export const createArticle = async (token: string, data: any) => {
+    try {
+        const res = await axiosInstance.post("articles", data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Create error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
 export const fetchArticles = async (token: string, page = 1) => {
     try {
         const res= await axiosInstance.get(`articles/?page=${page}`, {
@@ -66,6 +80,22 @@ export const fetchCategories = async (token: string) => {
         return res.data
     } catch (error: any) {
         console.error("Fetch error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/* === IMAGE === */
+export const uploadImage = async (token: string, data: FormData) => {
+    try {
+        const res = await axiosInstance.post("upload", data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Upload error:", error.response?.data || error.message);
         throw error;
     }
 }

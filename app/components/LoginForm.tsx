@@ -54,7 +54,11 @@ export default function LoginForm() {
             localStorage.setItem("token", res.token);
 
             toast.success("Registration successful!");
-            router.push("/articles");
+
+            // Redirect user based on role
+            res.role == "Admin"
+                ? router.push("/admin/articles")
+                : router.push("/articles");
         } catch (error: any) {
             toast.error(error.response?.data.error || "Registration failed. Please try again.");
         } finally {
