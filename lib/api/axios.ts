@@ -69,10 +69,52 @@ export const fetchArticleById = async (token: string, id: string) => {
     }
 }
 
+export const updateArticle = async (token: string, id: string, data: any) => {
+    try {
+        const res = await axiosInstance.put(`articles/${id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Update error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const deleteArticle = async (token: string, id: string) => {
+    try {
+        const res = await axiosInstance.delete(`articles/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Delete error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
 /* === CATEGORY === */
 export const fetchCategories = async (token: string,  page = 1) => {
     try {
         const res = await axiosInstance.get(`categories/?page=${page}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Fetch error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const fetchAllCategories = async (token: string) => {
+    try {
+        const res = await axiosInstance.get(`categories`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, UploadCloud } from "lucide-react";
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,7 @@ import AdminLayout from '@/app/components/AdminLayout'
 import NavbarAdmin from '@/app/components/NavbarAdmin'
 import { handleLogout, confirmLogout } from "@/helpers/articleHelpers"
 import TiptapEditor from "@/app/components/Editor";
-import { createArticle, uploadImage, fetchAllCategories } from "@/lib/api/axios";
+import { updateArticle, uploadImage, fetchAllCategories, fetchArticleById } from "@/lib/api/axios";
 import { setAllCategories } from "@/store/categorySlice"
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Category } from "@/types/article"
@@ -30,11 +30,14 @@ const formSchema = z.object({
 
 export default function page() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const articleId = searchParams.get("id")
 
     const [open, setOpen] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [loading, setLoading] = useState(false)
+    const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null)
 
     const { categories } = useAppSelector(state => state.category);
     const { token } = useAppSelector(state => state.auth);
@@ -42,22 +45,6 @@ export default function page() {
 
     const onLogout = () => handleLogout(setOpenDialog)
     const onConfirmLogout = () => confirmLogout(setOpenDialog, router)
-
-    useEffect(() => {
-        if (!token) return;
-        const getDataCategories = async () => {
-            try {
-                const res = await fetchAllCategories(token);
-                console.log("ini response category", res);
-
-                dispatch(setAllCategories(res.data));
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-        getDataCategories();
-    }, [token])
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -68,39 +55,70 @@ export default function page() {
         }
     })
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!imageFile || !token) {
-            toast.warning("Please upload an image.");
-            return;
+    useEffect(() => {
+        if (!token) return;
+        const getDataCategories = async () => {
+            try {
+                const res = await fetchAllCategories(token);
+
+                dispatch(setAllCategories(res.data));
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getDataCategories();
+    }, [token])
+
+    useEffect(() => {
+        if (!token || !articleId) return
+
+        const fetchArticleDetail = async () => {
+            try {
+                const res = await fetchArticleById(token, articleId)
+                const { title, content, categoryId, imageUrl } = res
+
+                setCurrentImageUrl(imageUrl)
+                form.setValue("title", title)
+                form.setValue("content", content)
+                form.setValue("category", categoryId)
+            } catch (error) {
+                console.error("Failed to fetch article detail", error);
+            }
         }
+
+        fetchArticleDetail()
+    }, [token, articleId])
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!token || !articleId) return
 
         try {
             setLoading(true)
-            const formData = new FormData()
-            formData.append("image", imageFile)
 
-            const uploadImageRes = await uploadImage(token, formData)
-            const imageUrl = uploadImageRes.imageUrl
+            let imageUrl = currentImageUrl;
+
+            if (imageFile) {
+                const formData = new FormData();
+                formData.append("image", imageFile);
+                const uploadImageRes = await uploadImage(token, formData);
+                imageUrl = uploadImageRes.imageUrl;
+            }
 
             const data = {
                 title: values.title,
                 content: values.content,
                 categoryId: values.category,
-                imageUrl: imageUrl
+                imageUrl: currentImageUrl
             }
 
-            const articleRes = await createArticle(token, data)
+            await updateArticle(token, articleId, data)
 
-            if (articleRes) {
-                toast.success("Article created successfully!");
-                router.push("/admin/articles")
-            }
-
-        } catch (err) {
-            console.error(err)
-            toast.error("Failed to create article")
-        } finally {
-            setLoading(false)
+            toast.success("Article updated successfully!");
+            router.push("/admin/articles")
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to update article");
         }
     }
 
@@ -160,7 +178,10 @@ export default function page() {
                         {/* Category */}
                         <div>
                             <Label htmlFor="category">Category</Label>
-                            <Select onValueChange={(value) => form.setValue("category", value)}>
+                            <Select
+                                value={form.watch("category")}
+                                onValueChange={(value) => form.setValue("category", value)}
+                            >
                                 <SelectTrigger id="category" className="w-full">
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
@@ -241,7 +262,7 @@ export default function page() {
                                 type="submit"
                                 onClick={form.handleSubmit(onSubmit)}
                                 disabled={loading}
-                            >
+                            > {loading ? "Updating..." : "Update"}
                             </Button>
                         </div>
                     </Card>

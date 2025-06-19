@@ -17,6 +17,7 @@ import { setCategories } from "@/store/categorySlice"
 import { Category } from "@/types/article"
 import AdminLayout from "@/app/components/AdminLayout"
 import NavbarAdmin from "@/app/components/NavbarAdmin"
+import ArticleDeleteConfirm from "@/widgets/ArticleDeleteConfirm"
 
 export default function AdminDashboard() {
     const router = useRouter()
@@ -31,7 +32,8 @@ export default function AdminDashboard() {
     const [currentPage, setCurrentPage] = useState(page || 1);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState<string | null>(null)
-
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
 
     const onLogout = () => handleLogout(setOpenDialog)
     const onConfirmLogout = () => confirmLogout(setOpenDialog, router)
@@ -42,18 +44,17 @@ export default function AdminDashboard() {
         setCurrentPage(newPage);
     };
 
-    useEffect(() => {
+    const getDataArticles = async () => {
         if (!token) return;
+        try {
+            const res = await fetchArticles(token, currentPage);
+            dispatch(setArticles(res));
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
-        const getDataArticles = async () => {
-            try {
-                const res = await fetchArticles(token, currentPage);
-                dispatch(setArticles(res));
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
+    useEffect(() => {
         getDataArticles();
     }, [token, currentPage]);
 
@@ -149,13 +150,34 @@ export default function AdminDashboard() {
                                     <TableCell>{article.createdAt}</TableCell>
                                     <TableCell className="space-x-2">
                                         <Button variant="link" className="text-blue-600 p-0">Preview</Button>
-                                        <Button variant="link" className="text-green-600 p-0">Edit</Button>
-                                        <Button variant="link" className="text-red-600 p-0">Delete</Button>
+                                        <Button
+                                            variant="link"
+                                            className="text-green-600 p-0"
+                                            onClick={() => router.push(`/admin/articles/edit?id=${article.id}`)}
+                                        >Edit
+                                        </Button>
+                                        <Button
+                                            variant="link"
+                                            className="text-red-600 p-0"
+                                            onClick={() => {
+                                                setIsDeleteDialogOpen(true)
+                                                setSelectedArticleId(article.id)
+                                            }}
+                                        >Delete
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
+
+                    {/* Delete Confirm */}
+                    <ArticleDeleteConfirm
+                        id={selectedArticleId}
+                        isDeleteDialogOpen={isDeleteDialogOpen}
+                        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+                        onSuccessDelete={getDataArticles}
+                    />
                 </div>
 
                 <PaginationControl

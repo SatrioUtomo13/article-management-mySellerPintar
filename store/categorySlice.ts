@@ -24,9 +24,12 @@ const categorySlice = createSlice({
             state.totalData = action.payload.totalData
             state.currentPage = action.payload.currentPage
             state.totalPages = action.payload.totalPages
+        },
+        setAllCategories: (state, action) => {
+            state.categories = action.payload
         }
     }
 })
 
-export const { setCategories } = categorySlice.actions;
+export const { setCategories, setAllCategories } = categorySlice.actions;
 export default categorySlice.reducer;
