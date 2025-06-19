@@ -35,9 +35,6 @@ export default function page() {
     const [openDialog, setOpenDialog] = useState(false)
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [loading, setLoading] = useState(false)
-    const [title, setTitle] = useState('')
-    const [content, setContent] = useState('')
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const { categories } = useAppSelector(state => state.category);
     const { token } = useAppSelector(state => state.auth);
@@ -151,7 +148,6 @@ export default function page() {
                             <Input
                                 id="title"
                                 placeholder="Input title"
-                                // onChange={(e) => setTitle(e.target.value)}
                                 {...form.register("title")}
                             />
                             {form.formState.errors.title && (
@@ -243,7 +239,7 @@ export default function page() {
                                 type="submit"
                                 onClick={form.handleSubmit(onSubmit)}
                                 disabled={loading}
-                            >{loading ? "Uploading..." : "Upload"}
+                            >
                             </Button>
                         </div>
                     </Card>

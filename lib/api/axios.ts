@@ -70,9 +70,9 @@ export const fetchArticleById = async (token: string, id: string) => {
 }
 
 /* === CATEGORY === */
-export const fetchCategories = async (token: string) => {
+export const fetchCategories = async (token: string,  page = 1) => {
     try {
-        const res = await axiosInstance.get("categories", {
+        const res = await axiosInstance.get(`categories/?page=${page}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -80,6 +80,48 @@ export const fetchCategories = async (token: string) => {
         return res.data
     } catch (error: any) {
         console.error("Fetch error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const createCategory = async (token: string, name: string) => {
+    try {
+        const res = await axiosInstance.post("categories", {name}, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Create error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const updateCategory = async (token: string, id: string, name: string) => {
+    try {
+        const res = await axiosInstance.put(`categories/${id}`, {name}, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Update error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export const deleteCategory = async (token: string, id: string) => {
+    try {
+        const res = await axiosInstance.delete(`categories/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Delete error:", error.response?.data || error.message);
         throw error;
     }
 }

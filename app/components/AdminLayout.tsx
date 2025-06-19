@@ -35,7 +35,7 @@ export default function AdminLayout({ open, setOpen }: { open: boolean, setOpen:
                     </DrawerHeader>
                     <div className="flex space-x-2 hover:bg-blue-500 px-3 py-2 rounded-sm">
                         <Newspaper className="w-5 h-5" />
-                        <Link href="/admin/dashboard">Articles</Link>
+                        <Link href="/admin/articles">Articles</Link>
                     </div>
                     <div className="flex space-x-2 hover:bg-blue-500 px-3 py-2 rounded-sm">
                         <Tag className="w-5 h-5" />
@@ -57,7 +57,7 @@ export default function AdminLayout({ open, setOpen }: { open: boolean, setOpen:
                 <nav className="space-y-4 mt-5">
                     <div className="flex space-x-2 hover:bg-blue-500 px-3 py-2 rounded-sm">
                         <Newspaper className="w-5 h-5" />
-                        <Link href="/admin/dashboard">Articles</Link>
+                        <Link href="/admin/articles">Articles</Link>
                     </div>
                     <div className="flex space-x-2 hover:bg-blue-500 px-3 py-2 rounded-sm">
                         <Tag className="w-5 h-5" />
