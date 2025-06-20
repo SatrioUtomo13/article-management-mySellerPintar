@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LogOut } from "lucide-react"
+import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { fetchUserProfile } from "@/lib/api/axios";
 
@@ -15,6 +16,7 @@ export default function userDropdown({ onLogout, isScroll }: { onLogout: () => v
     const [isOpen, setIsOpen] = useState(false)
     const [username, setUsername] = useState<string>("")
     const { token } = useAppSelector(state => state.auth);
+    const router = useRouter()
 
     useEffect(() => {
         if (!token) return
@@ -46,7 +48,7 @@ export default function userDropdown({ onLogout, isScroll }: { onLogout: () => v
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem>My Account</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/user/profile")}>My Account</DropdownMenuItem>
                 <div className="border-b border-gray-200" />
                 <DropdownMenuItem className="text-red-500" onClick={onLogout}>
                     <LogOut className="w-4 h-4 text-red-500" /> Log out
