@@ -11,7 +11,7 @@ export default function NavbarAdmin(
         <div className="flex w-full justify-between items-center bg-white px-2 py-4">
             <span className="font-semibold">{name}</span>
             <div>
-                <UserDropdown onLogout={onLogout} />
+                <UserDropdown onLogout={onLogout} isScroll={false} />
                 <AlertDialogLogout
                     open={openDialog}
                     onOpenChange={setOpenDialog}

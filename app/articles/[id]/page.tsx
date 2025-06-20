@@ -18,7 +18,6 @@ import { useAppSelector } from '@/hooks'
 import { Article } from '@/types/article'
 import ArticleCard from '@/app/components/ArticleCard'
 import Footer from '@/widgets/footer'
-import UserDropdown from '@/widgets/userDropdown'
 import AlertDialogLogout from '@/widgets/alertDialog'
 import { fetchUserProfile } from "@/lib/api/axios";
 
