@@ -51,8 +51,8 @@ export default function LoginForm() {
         setLoading(true);
         try {
             const res = await login(values);
-            localStorage.setItem("token", res.token);
 
+            localStorage.setItem("token", res.token);
             toast.success("Registration successful!");
 
             // Redirect user based on role

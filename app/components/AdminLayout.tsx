@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Drawer,
     DrawerContent,
@@ -12,10 +12,19 @@ import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 import { Newspaper, Tag, LogOut, Search } from "lucide-react";
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import Logo from '@/widgets/Logo'
+import { confirmLogout } from '@/helpers/articleHelpers'
+import AlertDialogLogout from '@/widgets/alertDialog'
 
 export default function AdminLayout({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
+    const [openDialog, setOpenDialog] = useState(false)
+    const router = useRouter()
+
+    const onConfirmLogout = () => confirmLogout(setOpenDialog, router)
+
+
     return (
         <>
             {/* Sidebar */}
@@ -43,7 +52,12 @@ export default function AdminLayout({ open, setOpen }: { open: boolean, setOpen:
                     </div>
                     <div className="flex space-x-2 hover:bg-blue-500 px-3 py-2 rounded-sm">
                         <LogOut className="w-5 h-5" />
-                        <Link href="/logout">Logout</Link>
+                        <span
+                            className='cursor-pointer'
+                            onClick={() => setOpenDialog(true)}
+                        >
+                            Logout
+                        </span>
                     </div>
                 </DrawerContent>
             </Drawer>
@@ -65,10 +79,21 @@ export default function AdminLayout({ open, setOpen }: { open: boolean, setOpen:
                     </div>
                     <div className="flex space-x-2 hover:bg-blue-500 px-3 py-2 rounded-sm">
                         <LogOut className="w-5 h-5" />
-                        <Link href="/logout">Logout</Link>
+                        <span
+                            className='cursor-pointer'
+                            onClick={() => setOpenDialog(true)}
+                        >
+                            Logout
+                        </span>
                     </div>
                 </nav>
             </aside>
+
+            <AlertDialogLogout
+                open={openDialog}
+                onOpenChange={setOpenDialog}
+                onConfirm={onConfirmLogout}
+            />
         </>
     )
 }

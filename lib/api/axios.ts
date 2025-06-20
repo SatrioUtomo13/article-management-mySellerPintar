@@ -26,6 +26,20 @@ export const login = async (data: LoginData) => {
     }
 }
 
+export const fetchUserProfile = async (token: string) => {
+    try {
+        const res = await axiosInstance.get("auth/profile", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        return res.data
+    } catch (error: any) {
+        console.error("Fetch profile error:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
 /* === ARTICLES === */
 export const createArticle = async (token: string, data: any) => {
     try {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,17 +8,40 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LogOut } from "lucide-react"
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { fetchUserProfile } from "@/lib/api/axios";
 
 export default function userDropdown({ onLogout }: { onLogout: () => void }) {
     const [isOpen, setIsOpen] = useState(false)
+    const [username, setUsername] = useState<string>("")
+    const { token } = useAppSelector(state => state.auth);
+
+    useEffect(() => {
+        if (!token) return
+
+        const getUser = async () => {
+            try {
+                const res = await fetchUserProfile(token)
+                setUsername(res.username)
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        getUser()
+    }, [token])
+
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
                 <div className="xl:flex xl:space-x-2 cursor-pointer">
                     <div className="bg-blue-200 rounded-full h-8 w-8 flex items-center justify-center font-bold text-blue-600">
-                        J
+                        {
+                            username.slice(0, 1).toUpperCase()
+                        }
                     </div>
-                    <span className="hidden xl:block underline">James Dean</span>
+                    <span className="hidden xl:block underline">{username}</span>
                 </div>
             </DropdownMenuTrigger>
 
