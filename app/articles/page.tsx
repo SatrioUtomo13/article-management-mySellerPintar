@@ -60,7 +60,7 @@ export default function ListArticles() {
         const getDataCategories = async () => {
             try {
                 const res = await fetchCategories(token);
-                dispatch(setCategories(res.data));
+                dispatch(setCategories(res));
             } catch (error) {
                 console.log(error);
             }

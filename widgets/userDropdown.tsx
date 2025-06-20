@@ -11,7 +11,7 @@ import { LogOut } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { fetchUserProfile } from "@/lib/api/axios";
 
-export default function userDropdown({ onLogout }: { onLogout: () => void }) {
+export default function userDropdown({ onLogout, isScroll }: { onLogout: () => void, isScroll: boolean }) {
     const [isOpen, setIsOpen] = useState(false)
     const [username, setUsername] = useState<string>("")
     const { token } = useAppSelector(state => state.auth);
@@ -41,7 +41,7 @@ export default function userDropdown({ onLogout }: { onLogout: () => void }) {
                             username.slice(0, 1).toUpperCase()
                         }
                     </div>
-                    <span className="hidden xl:block underline">{username}</span>
+                    <span className={`hidden xl:block underline ${isScroll ? 'text-slate-900' : 'text-white'}`}>{username}</span>
                 </div>
             </DropdownMenuTrigger>
 
